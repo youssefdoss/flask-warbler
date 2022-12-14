@@ -350,6 +350,46 @@ def delete_message(message_id):
 ##############################################################################
 # Like routes
 
+@app.post('/messages/<int:message_id>/like')
+def handle_like(message_id):
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    user = g.user
+    form = g.csrf_form
+
+    location = request.form.get("location")
+
+    if form.validate_on_submit():
+        message = Message.query.get_or_404(message_id)
+
+        if message in user.liked_messages:
+            user.liked_messages.remove(message)
+
+        else:
+            user.liked_messages.append(message)
+
+        db.session.commit()
+
+        return redirect(location)
+
+    flash("Message like error")
+    return redirect(location)
+
+
+
+@app.get('/users/<int:user_id>/likes')
+def show_likes(user_id):
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    user = g.user
+
+    return render_template("users/likes.html", user=user)
 
 
 ##############################################################################
