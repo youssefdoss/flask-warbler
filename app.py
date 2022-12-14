@@ -6,7 +6,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
 from forms import UserAddForm, LoginForm, MessageForm, CSRFProtectForm, UserEditForm
-from models import db, connect_db, User, Message
+from models import db, connect_db, User, Message, DEFAULT_HEADER_IMAGE_URL, DEFAULT_IMAGE_URL
 
 load_dotenv()
 
@@ -238,7 +238,7 @@ def stop_following(follow_id):
 
 
 @app.route('/users/profile', methods=["GET", "POST"])
-def profile():
+def edit_profile():
     """Update profile for current user."""
 
     if not g.user:
@@ -253,8 +253,8 @@ def profile():
         if user.authenticate(user.username, form.password.data):
             user.username = form.username.data
             user.email = form.email.data
-            user.image_url = form.image_url.data
-            user.header_image_url = form.header_image_url.data
+            user.image_url = form.image_url.data or DEFAULT_IMAGE_URL
+            user.header_image_url = form.header_image_url.data or DEFAULT_HEADER_IMAGE_URL
             user.bio = form.bio.data
 
             db.session.commit()
@@ -345,6 +345,11 @@ def delete_message(message_id):
         flash("Warble deleted")
 
     return redirect(f"/users/{g.user.id}")
+
+
+##############################################################################
+# Like routes
+
 
 
 ##############################################################################

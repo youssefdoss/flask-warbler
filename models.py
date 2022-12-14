@@ -85,6 +85,14 @@ class User(db.Model):
         backref="following",
     )
 
+    liked_messages = db.relationship(
+        "Message",
+        secondary="likes",
+        # primaryjoin=(Follows.user_being_followed_id == id),
+        # secondaryjoin=(Follows.user_following_id == id),
+        backref="messages",
+    )
+
     def __repr__(self):
         return f"<User #{self.id}: {self.username}, {self.email}>"
 
@@ -170,6 +178,27 @@ class Message(db.Model):
         nullable=False,
     )
 
+
+class Like(db.Model):
+    '''Many to many table between users and messages'''
+
+    __tablename__ = 'likes'
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+        autoincrement=True
+    )
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete='CASCADE'),
+    )
+
+    message_id = db.Column(
+        db.Integer,
+        db.ForeignKey('messages.id', ondelete='CASCADE'),
+    )
 
 def connect_db(app):
     """Connect this database to provided Flask app.
