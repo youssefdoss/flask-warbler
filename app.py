@@ -5,7 +5,7 @@ from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
-from forms import UserAddForm, LoginForm, MessageForm, CSRFProtectForm
+from forms import UserAddForm, LoginForm, MessageForm, CSRFProtectForm, UserEditForm
 from models import db, connect_db, User, Message
 
 load_dotenv()
@@ -128,10 +128,13 @@ def logout():
     form = g.csrf_form
 
     if form.validate_on_submit():
-        session.pop(CURR_USER_KEY, None)
+        do_logout()
 
         flash("Logout successful!")
-        return redirect("/login")
+
+    return redirect("/login")
+
+
 
     # IMPLEMENT THIS AND FIX BUG
     # DO NOT CHANGE METHOD ON ROUTE
@@ -238,8 +241,29 @@ def stop_following(follow_id):
 def profile():
     """Update profile for current user."""
 
-    # IMPLEMENT THIS
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
 
+    user = g.user
+
+    form = UserEditForm(obj=user)
+
+    if form.validate_on_submit():
+        if user.authenticate(user.username, form.password.data):
+            user.username = form.username.data
+            user.email = form.email.data
+            user.image_url = form.image_url.data
+            user.header_image_url = form.header_image_url.data
+            user.bio = form.bio.data
+
+            db.session.commit()
+
+            return redirect(f'/users/{user.id}')
+        else:
+            flash("Wrong password")
+
+    return render_template("users/edit.html", form=form, user_id=user.id)
 
 @app.post('/users/delete')
 def delete_user():
@@ -252,10 +276,12 @@ def delete_user():
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    do_logout()
+    form = g.csrf_form
+    if form.validate_on_submit():
+        do_logout()
 
-    db.session.delete(g.user)
-    db.session.commit()
+        User.query.filter_by(id=g.user.id).delete()
+        db.session.commit()
 
     return redirect("/signup")
 
@@ -310,9 +336,13 @@ def delete_message(message_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    msg = Message.query.get_or_404(message_id)
-    db.session.delete(msg)
-    db.session.commit()
+    form = g.csrf_form
+
+    if form.validate_on_submit():
+        msg = Message.query.get_or_404(message_id)
+        Message.query.filter_by(id=msg.id).delete()
+        db.session.commit()
+        flash("Warble deleted")
 
     return redirect(f"/users/{g.user.id}")
 
@@ -330,8 +360,11 @@ def homepage():
     """
 
     if g.user:
+        following_and_self = [following.id for following in g.user.following] + [g.user.id]
+
         messages = (Message
                     .query
+                    .filter(Message.user_id.in_(following_and_self))
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
