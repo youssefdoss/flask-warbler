@@ -3,7 +3,13 @@
 {% block content %}
 
 <div id="warbler-hero"
-     class="full-width">
+     class="full-width container">
+     <div class="row">
+      <img src="{{ user.header_image_url }}"
+            alt="Header image for {{ user.username }}"
+            id="profile-header"
+            class="img-fluid w-100"> <!--TODO: Fix image size-->
+     </div>
 </div>
 <img src="{{ user.image_url }}"
      alt="Image for {{ user.username }}"
@@ -80,10 +86,16 @@
 <div class="row">
   <div class="col-sm-3">
     <h4 id="sidebar-username">@{{ user.username }}</h4>
-    <p>BIO HERE</p>
+    <p>
+      {% if user.bio %}
+      {{ user.bio }}
+      {% endif %}
+    </p>
     <p class="user-location">
+      {% if user.location %}
       <span class="bi bi-map"></span>
-      LOCATION HERE
+      {{ user.location }}
+      {% endif %}
     </p>
   </div>
 
