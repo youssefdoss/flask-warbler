@@ -25,7 +25,7 @@ app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
-
+db.create_all()
 
 ##############################################################################
 # User signup/login/logout
@@ -119,6 +119,12 @@ def logout():
     """Handle logout of user and redirect to homepage."""
 
     form = g.csrf_form
+
+    if form.validate_on_submit():
+        session.pop(CURR_USER_KEY, None)
+
+        flash("Logout successful!")
+        return redirect("/login")
 
     # IMPLEMENT THIS AND FIX BUG
     # DO NOT CHANGE METHOD ON ROUTE
