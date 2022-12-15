@@ -7,7 +7,7 @@
 
 import os
 from unittest import TestCase
-
+from sqlalchemy.exc import IntegrityError
 from models import db, User, Message, Follows, connect_db
 
 # BEFORE we import our app, let's set an environmental variable
@@ -59,13 +59,13 @@ class UserModelTestCase(TestCase):
         '''Tests that is_following detects followers properly'''
         u1 = User.query.get(self.u1_id)
         u2 = User.query.get(self.u2_id)
-        
+
         u1.following.append(u2)
 
         following = u1.is_following(u2)
 
         self.assertEqual(following, True)
-    
+
     def test_is_following_false(self):
         '''Tests that is_following detects non-followers properly'''
         u1 = User.query.get(self.u1_id)
@@ -74,7 +74,7 @@ class UserModelTestCase(TestCase):
         following = u1.is_following(u2)
 
         self.assertEqual(following, False)
-    
+
     def test_is_followed_by_true(self):
         '''Tests that is_followed_by detects followers properly'''
         u1 = User.query.get(self.u1_id)
@@ -85,7 +85,7 @@ class UserModelTestCase(TestCase):
         followed_by = u1.is_followed_by(u2)
 
         self.assertEqual(followed_by, True)
-    
+
     def test_is_followed_by_false(self):
         '''Tests that is_followed_by detects non-followers properly'''
         u1 = User.query.get(self.u1_id)
@@ -94,16 +94,35 @@ class UserModelTestCase(TestCase):
         followed_by = u1.is_followed_by(u2)
 
         self.assertEqual(followed_by, False)
-    
+
     def test_signup_success(self):
         '''Tests that User.signup returns a User instance with valid inputs'''
         user = User.signup(username='test_username', email='test@test.com', password='test_password')
 
         self.assertIsInstance(user, User)
-    
-    def test_signup_failure(self):
-        # TODO: Fix this
-        '''Tests that User.signup does not returns a User instance with invalid inputs'''
-        user = User.signup(username='test_username', email=None, password='test_password')
+        self.assertEqual(user.username, "test_username")
+        self.assertTrue(user.password.startswith('$2b$'))
 
-        self.assertNotIsInstance(user, User)
+    def test_signup_failure(self):
+        '''Tests that User.signup does not returns a User instance with invalid inputs'''
+        with self.assertRaises(IntegrityError): #ASK ABOUT THIS
+            User.signup(username='test_username', email=None, password='test_password')
+            db.session.commit()
+
+    def test_authenticate_user_success(self):
+        '''Tests that User.authenticate verifies valid usernames and passwords'''
+        u1 = User.query.get(self.u1_id)
+
+        user = User.authenticate("u1", "password")
+
+        self.assertEqual(u1, user)
+
+    def test_authenticate_user_failure_username(self):
+        '''Tests that User.authenticate returns false for invalid username'''
+
+        self.assertFalse(User.authenticate("foo", "password"))
+
+    def test_authenticate_user_failure_password(self):
+        '''Tests that User.authenticate returns false for invalid password'''
+
+        self.assertFalse(User.authenticate("u1", "foo"))
