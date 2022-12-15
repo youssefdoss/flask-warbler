@@ -59,7 +59,9 @@ class MessageBaseViewTestCase(TestCase):
 
 
 class MessageAddViewTestCase(MessageBaseViewTestCase):
+    '''Tests view functions that add messages'''
     def test_add_message(self):
+        '''Tests adding a message while logged in is successful'''
         # Since we need to change the session to mimic logging in,
         # we need to use the changing-session trick:
         with self.client as c:
@@ -73,3 +75,95 @@ class MessageAddViewTestCase(MessageBaseViewTestCase):
             self.assertEqual(resp.status_code, 302)
 
             Message.query.filter_by(text="Hello").one()
+
+    def test_add_message_logged_out(self):
+        '''Tests that adding a message while logged out is unsuccessful'''
+        with self.client as c:
+            resp = c.post("/messages/new", data={"text": "Hello"}, follow_redirects=True)
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('Access unauthorized.', html)
+
+    def test_add_message_wrong_user(self):
+        '''Tests that adding a message while logged in as a non-existant user doesn't work'''
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = 1234356
+
+            resp = c.post("/messages/new", data={"text": "Hello"}, follow_redirects=True)
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('Access unauthorized.', html)
+
+class MessageDeleteViewTestCase(MessageBaseViewTestCase):
+    '''Tests view functions that delete messages'''
+    def test_delete_message(self):
+        '''Tests that deleting a message while logged in is successful'''
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1_id
+            
+            resp = c.post(f'messages/{self.m1_id}/delete', follow_redirects=True)
+            self.assertEqual(resp.status_code, 200)
+
+            message = Message.query.get(self.m1_id)
+            self.assertIsNone(message)
+    
+    def test_delete_message_logged_out(self):
+        '''Tests that deleting a message while logged out is unsuccessful'''
+        with self.client as c:
+            resp = c.post(f'messages/{self.m1_id}/delete', follow_redirects=True)
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('Access unauthorized.', html)
+
+            message = Message.query.get(self.m1_id)
+            self.assertIsNotNone(message)
+
+    def test_delete_message_wrong_user(self):
+        '''Tests that deleting a message while logged in as a non-existant user doesn't work'''
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = 1234356
+
+            resp = c.post(f'messages/{self.m1_id}/delete', follow_redirects=True)
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('Access unauthorized.', html)
+
+            message = Message.query.get(self.m1_id)
+            self.assertIsNotNone(message)
+
+class MessageShowViewTestCase(MessageBaseViewTestCase):
+    '''Tests view functions that show messages'''
+    def test_show_message(self):
+        '''Tests that showing a message while logged in returns correct html'''
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1_id
+
+            resp = c.get(f'messages/{self.m1_id}', follow_redirects=True)
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('m1-text', html)
+
+    def test_show_message_logged_out(self):
+        '''Tests that user cannot see messages while logged out'''
+        with self.client as c:
+            resp = c.get(f'messages/{self.m1_id}', follow_redirects=True)
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('Access unauthorized.', html)
+    
+    def test_show_wrong_user(self):
+        '''Tests that user cannot see messages while logged in as non-existant user'''
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = 1234356
+
+            resp = c.get(f'messages/{self.m1_id}', follow_redirects=True)
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('Access unauthorized.', html)
+
+            
