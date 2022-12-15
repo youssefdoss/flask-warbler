@@ -352,6 +352,9 @@ def delete_message(message_id):
 
 @app.post('/messages/<int:message_id>/like')
 def handle_like(message_id):
+    '''If message is liked by user, unlikes; if message is not liked by user, likes
+    
+    Redirects to the page the user is currently on assuming valid authentication'''
 
     if not g.user:
         flash("Access unauthorized.", "danger")
@@ -382,6 +385,7 @@ def handle_like(message_id):
 
 @app.get('/users/<int:user_id>/likes')
 def show_likes(user_id):
+    '''Show a user's likes page'''
 
     if not g.user:
         flash("Access unauthorized.", "danger")

@@ -88,8 +88,6 @@ class User(db.Model):
     liked_messages = db.relationship(
         "Message",
         secondary="likes",
-        # primaryjoin=(Follows.user_being_followed_id == id),
-        # secondaryjoin=(Follows.user_following_id == id),
         backref="messages",
     )
 
