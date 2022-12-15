@@ -180,4 +180,94 @@ class UserAuthorizationTestUseCase(UserBaseViewTestCase):
             self.assertIn("Username or email already taken", html)
 
 class UserProfileViewTestCase(UserBaseViewTestCase):
-    '''Tests that correct HTML is returned for various profiles'''
+    '''Tests view functions for specific profiles'''
+    def test_show_user(self):
+        '''Tests that clicking a user profile returns the correct html'''
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1_id
+            resp = c.get(f'/users/{self.u2_id}', follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('@u2', html)
+
+    def test_show_user_not_logged_in(self):
+        '''Tests that clicking a user profile returns the correct html when logged out'''
+        with self.client as c:
+            resp = c.get(f'/users/{self.u2_id}', follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('Access unauthorized.', html)
+    
+    def test_list_users(self):
+        '''Tests that route shows all users on the database'''
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1_id
+            resp = c.get(f'/users', follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('@u1', html)
+            self.assertIn('@u2', html)
+    
+    def test_list_users_not_logged_in(self):
+        '''Tests that list users returns correct html when logged out'''
+        with self.client as c:
+            resp = c.get(f'/users', follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('Access unauthorized.', html)
+
+    def test_edit_profile(self):
+        '''Tests that editing a profile returns the correct html'''
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1_id
+            data = {"username": "new", "password": "password"}
+            resp = c.post('/users/profile', data=data, follow_redirects=True)
+            html = resp.get_data(as_text=True)
+            self.assertIn('@new', html)
+
+    def test_edit_profile_invalid_email(self):
+        '''Tests that editing a profile with an invalid email returns correct html'''
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1_id
+            data = {"email": "new", "password": "password"}
+            resp = c.post('/users/profile', data=data, follow_redirects=True)
+            html = resp.get_data(as_text=True)
+            self.assertIn('Edit Your Profile', html)
+
+    def test_edit_profile_not_logged_in(self):
+        '''Tests that editing a profile while not logged in returns correct html'''
+        with self.client as c:
+            data = {"username": "new", "password": "password"}
+            resp = c.post('/users/profile', data=data, follow_redirects=True)
+            html = resp.get_data(as_text=True)
+            self.assertIn('Access unauthorized.', html)
+
+    def test_delete_profile(self):
+        '''Tests that deleting a profile returns the correct html and deletes the profile from the db'''
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1_id
+            resp = c.post('/users/delete', follow_redirects=True)
+            html = resp.get_data(as_text=True)
+            
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('Join Warbler today.', html)
+            user = User.query.get(self.u1_id)
+            self.assertIsNone(user)
+    
+    def test_delete_profile_not_logged_in(self):
+        '''Tests that deleting a profile returns the correct html when not logged in'''
+        with self.client as c:
+            resp = c.post('/users/delete', follow_redirects=True)
+            html = resp.get_data(as_text=True)
+            
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('Access unauthorized.', html)
