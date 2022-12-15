@@ -102,13 +102,13 @@ class MessageDeleteViewTestCase(MessageBaseViewTestCase):
         with self.client as c:
             with c.session_transaction() as sess:
                 sess[CURR_USER_KEY] = self.u1_id
-            
+
             resp = c.post(f'messages/{self.m1_id}/delete', follow_redirects=True)
             self.assertEqual(resp.status_code, 200)
 
             message = Message.query.get(self.m1_id)
             self.assertIsNone(message)
-    
+
     def test_delete_message_logged_out(self):
         '''Tests that deleting a message while logged out is unsuccessful'''
         with self.client as c:
@@ -154,7 +154,7 @@ class MessageShowViewTestCase(MessageBaseViewTestCase):
             html = resp.get_data(as_text=True)
             self.assertEqual(resp.status_code, 200)
             self.assertIn('Access unauthorized.', html)
-    
+
     def test_show_wrong_user(self):
         '''Tests that user cannot see messages while logged in as non-existant user'''
         with self.client as c:
@@ -166,4 +166,3 @@ class MessageShowViewTestCase(MessageBaseViewTestCase):
             self.assertEqual(resp.status_code, 200)
             self.assertIn('Access unauthorized.', html)
 
-            
