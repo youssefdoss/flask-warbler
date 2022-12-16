@@ -48,6 +48,13 @@ def create_csrf_form():
     form = CSRFProtectForm()
     g.csrf_form = form
 
+@app.before_request
+def create_message_form():
+    '''Create empty message form'''
+
+    form = MessageForm()
+    g.message_form = form
+
 def do_login(user):
     """Log in user."""
 
@@ -367,9 +374,9 @@ def handle_like(message_id):
     user = g.user
     form = g.csrf_form
 
-    location = request.form.get("location")
+    # location = request.form.get("location")
 
-    if form.validate_on_submit():
+    if form.validate():
         message = Message.query.get_or_404(message_id)
         if message in user.messages:
             return
@@ -382,10 +389,9 @@ def handle_like(message_id):
 
         db.session.commit()
 
-        return redirect(location)
+        return "Success!"
 
-    flash("Message like error")
-    return redirect(location)
+    return jsonify(form.errors), 400
 
 # AJAX one
 @app.post('/messages/<int:message_id>/likes')

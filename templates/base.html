@@ -55,7 +55,9 @@
             <img src="{{ g.user.image_url }}" alt="{{ g.user.username }}">
           </a>
         </li>
-        <li><a href="/messages/new">New Message</a></li>
+        <li><button type="button" data-bs-toggle="modal" data-bs-target="#exampleModal">
+          New Message
+        </button></li>
         <li>
           <form id="user-logout-form" action="/logout" method="POST">
           {{ g.csrf_form.hidden_tag() }}
@@ -69,6 +71,38 @@
 </nav>
 
 <div class="container">
+  <div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+       <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">New Message</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form method="POST">
+            {{ g.message_form.csrf_token }}
+            <div>
+              {% if g.message_form.text.errors %}
+                {% for error in form.text.errors %}
+                  <span class="text-danger">
+                {{ error }}
+              </span>
+                {% endfor %}
+              {% endif %}
+              {{ g.message_form.text(
+                  placeholder="What's happening?",
+                  class="form-control",
+                  rows="3") }}
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button class="btn btn-outline-success">Add my message!</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 
   {% for category, message in get_flashed_messages(with_categories=True) %}
     <div class="alert alert-{{ category }}">{{ message }}</div>
