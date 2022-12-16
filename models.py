@@ -148,6 +148,20 @@ class User(db.Model):
             user for user in self.following if user == other_user]
         return len(found_user_list) == 1
 
+    def serialize(self):
+        '''Serialize to a dictionary'''
+        return {
+            "id": self.id,
+            "email": self.email,
+            "username": self.username,
+            "image_url": self.image_url,
+            "header_image_url": self.header_image_url,
+            "bio": self.bio,
+            "location": self.location,
+            "password": self.password
+        }
+
+
 
 class Message(db.Model):
     """An individual message ("warble")."""

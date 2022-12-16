@@ -4,6 +4,7 @@ const $likeForm = $('.like');
 const $messageModal = $('#messageModal')
 const $newMessageButton = $('#new-message');
 const $newMessageForm = $('#new-message-form');
+const $messages = $('#messages');
 
 /** like: likes or unlikes a warble that is clicked on */
 async function like(evt) {
@@ -40,11 +41,33 @@ async function addTweet(evt) {
         location: $location.val()
     }
 
-    await axios.post(
+    const response = await axios.post(
         '/messages/new',
         fields,
         {headers: {'content-type': 'application/json'}}
     );
+    console.log($messages);
+    console.log(response.data);
+    const msg = response.data.msg;
+    const user = response.data.user;
+
+    if (response.data.modify_DOM === true) {
+        const $newMessage = $(`<li class="list-group-item">
+        <a href="/messages/${ msg.id }" class="message-link"/>
+        <a href="/users/${ msg.user_id }">
+          <img src="${ user.image_url }" alt="" class="timeline-image">
+        </a>
+        <div class="message-area">
+          <a href="/users/"${ msg.user_id }">@${ user.username }</a>
+          <span class="text-muted">{{ $(msg.timestamp).strftime('%d %B %Y') }}</span>
+          <p>${ msg.text }</p>
+        </div>
+      </li>`);
+        $messages.prepend($newMessage);
+
+    }
+
+    $messageModal.modal('hide');
 }
 
 $newMessageButton.on('click', function () {
@@ -53,3 +76,4 @@ $newMessageButton.on('click', function () {
 
 $likeForm.on('submit', like);
 $newMessageForm.on('submit', addTweet);
+

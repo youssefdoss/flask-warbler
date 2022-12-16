@@ -1,7 +1,8 @@
 import os
 from dotenv import load_dotenv
+from urllib.parse import urlparse
 
-from flask import Flask, render_template, request, flash, redirect, session, g, jsonify
+from flask import Flask, render_template, request, flash, redirect, session, g, jsonify, url_for
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
@@ -320,20 +321,21 @@ def add_message():
     form = MessageForm()
 
     if form.validate:
-        location = request.json.get("location")
+        location = urlparse(request.json.get("location")).path
+
         msg = Message(text=form.text.data)
         g.user.messages.append(msg)
         db.session.commit()
 
         data = {
+            'user': g.user.serialize(),
             'msg': msg.serialize(),
             'modify_DOM': False
         }
 
-        if location == '/' or location == f'/users/{g.user.id}':
+        if location == url_for("homepage") or location == url_for("show_user", user_id=g.user.id):
             data['modify_DOM'] = True
 
-        breakpoint()
         flash('Message added!')
         return jsonify(data)
 
