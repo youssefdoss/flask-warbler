@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 
-from flask import Flask, render_template, request, flash, redirect, session, g
+from flask import Flask, render_template, request, flash, redirect, session, g, jsonify
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
@@ -371,6 +371,8 @@ def handle_like(message_id):
 
     if form.validate_on_submit():
         message = Message.query.get_or_404(message_id)
+        if message in user.messages:
+            return
 
         if message in user.liked_messages:
             user.liked_messages.remove(message)
@@ -384,6 +386,41 @@ def handle_like(message_id):
 
     flash("Message like error")
     return redirect(location)
+
+# AJAX one
+@app.post('/messages/<int:message_id>/likes')
+def handle_likes(message_id):
+    '''If message is liked by user, unlikes; if message is not liked by user, likes
+
+    Redirects to the page the user is currently on assuming valid authentication'''
+
+    # if not g.user:
+    #     flash("Access unauthorized.", "danger")
+    #     return redirect("/")
+
+    user = g.user
+    # form = g.csrf_form
+
+    # location = request.form.get("location")
+
+    message = Message.query.get_or_404(message_id)
+    if message in user.messages:
+        return jsonify(message='Access unauthorized.')
+
+    if message in user.liked_messages:
+        user.liked_messages.remove(message)
+        success_message = 'Like removed'
+
+    else:
+        user.liked_messages.append(message)
+        success_message = 'Like added'
+
+    db.session.commit()
+
+    return jsonify(message=success_message)
+
+    # flash("Message like error")
+    # return redirect(location)
 
 
 
