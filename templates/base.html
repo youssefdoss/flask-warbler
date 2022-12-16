@@ -55,7 +55,7 @@
             <img src="{{ g.user.image_url }}" alt="{{ g.user.username }}">
           </a>
         </li>
-        <li><button type="button" data-bs-toggle="modal" data-bs-target="#exampleModal">
+        <li><button class="btn btn-link" id="new-message" type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-whatever="@message">
           New Message
         </button></li>
         <li>
@@ -79,7 +79,8 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form method="POST">
+          <form method="POST" action="/messages/new" id="new-message-form">
+            <input id="location" name="location" type="hidden" value="{{ request.url }}">
             {{ g.message_form.csrf_token }}
             <div>
               {% if g.message_form.text.errors %}

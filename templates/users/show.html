@@ -3,7 +3,7 @@
 <div class="col-sm-6">
   <ul class="list-group" id="messages">
 
-    {% for message in user.messages %}
+    {% for message in messages %}
 
     <li class="list-group-item">
       <a href="/messages/{{ message.id }}" class="message-link"></a>
@@ -22,7 +22,7 @@
         <p>{{ message.text }}</p>
 
         {% if message.user_id != g.user.id %}
-          <form id="{{ msg.id }}" class="like">
+          <form id="{{ message.id }}" class="like">
             <input name="location" type="hidden" value="{{ request.url }}">
             {{ g.csrf_form.hidden_tag() }}
             <button class="btn" style="position: relative; z-index: 5;">

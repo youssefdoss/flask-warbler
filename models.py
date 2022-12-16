@@ -176,6 +176,15 @@ class Message(db.Model):
         nullable=False,
     )
 
+    def serialize(self):
+        '''Serialize to a dictionary'''
+        return {
+            "id": self.id,
+            "text": self.text,
+            "timestamp": self.timestamp,
+            "user_id": self.user_id,
+        }
+
 
 class Like(db.Model):
     '''Many to many table between users and messages'''

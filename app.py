@@ -184,8 +184,14 @@ def show_user(user_id):
         return redirect("/")
 
     user = User.query.get_or_404(user_id)
+    messages = (Message
+                    .query
+                    .filter(Message.user_id == user_id)
+                    .order_by(Message.timestamp.desc())
+                    .limit(100)
+                    .all())
 
-    return render_template('users/show.html', user=user)
+    return render_template('users/show.html', user=user, messages=messages)
 
 
 @app.get('/users/<int:user_id>/following')
@@ -313,12 +319,23 @@ def add_message():
 
     form = MessageForm()
 
-    if form.validate_on_submit():
+    if form.validate:
+        location = request.json.get("location")
         msg = Message(text=form.text.data)
         g.user.messages.append(msg)
         db.session.commit()
 
-        return redirect(f"/users/{g.user.id}")
+        data = {
+            'msg': msg.serialize(),
+            'modify_DOM': False
+        }
+
+        if location == '/' or location == f'/users/{g.user.id}':
+            data['modify_DOM'] = True
+
+        breakpoint()
+        flash('Message added!')
+        return jsonify(data)
 
     return render_template('messages/create.html', form=form)
 
