@@ -46,10 +46,11 @@ async function addTweet(evt) {
         fields,
         {headers: {'content-type': 'application/json'}}
     );
-    console.log($messages);
-    console.log(response.data);
     const msg = response.data.msg;
     const user = response.data.user;
+    const date = new Date(msg.timestamp);
+    const months = ['January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December']
 
     if (response.data.modify_DOM === true) {
         const $newMessage = $(`<li class="list-group-item">
@@ -59,12 +60,14 @@ async function addTweet(evt) {
         </a>
         <div class="message-area">
           <a href="/users/"${ msg.user_id }">@${ user.username }</a>
-          <span class="text-muted">{{ $(msg.timestamp).strftime('%d %B %Y') }}</span>
+          <span class="text-muted">${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}</span>
           <p>${ msg.text }</p>
         </div>
       </li>`);
         $messages.prepend($newMessage);
 
+    } else {
+        alert('Message added!');
     }
 
     $messageModal.modal('hide');
