@@ -5,6 +5,7 @@ const $messageModal = $('#messageModal')
 const $newMessageButton = $('#new-message');
 const $newMessageForm = $('#new-message-form');
 const $messages = $('#messages');
+const $nav = $('nav');
 
 /** like: likes or unlikes a warble that is clicked on */
 async function like(evt) {
@@ -66,9 +67,11 @@ async function addTweet(evt) {
       </li>`);
         $messages.prepend($newMessage);
 
-    } else {
-        alert('Message added!');
     }
+
+    $messageModal.after(
+        `<div class="alert alert-success mb-4">Message added!</div>`
+    )
 
     $messageModal.modal('hide');
 }
