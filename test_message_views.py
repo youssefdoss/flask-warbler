@@ -62,17 +62,13 @@ class MessageAddViewTestCase(MessageBaseViewTestCase):
     '''Tests view functions that add messages'''
     def test_add_message(self):
         '''Tests adding a message while logged in is successful'''
-        # Since we need to change the session to mimic logging in,
-        # we need to use the changing-session trick:
         with self.client as c:
             with c.session_transaction() as sess:
                 sess[CURR_USER_KEY] = self.u1_id
 
-            # Now, that session setting is saved, so we can have
-            # the rest of ours test
-            resp = c.post("/messages/new", data={"text": "Hello"})
+            resp = c.post("/messages/new", json={"text": "Hello", "location": "http://localhost:5001/"}, headers={"Content-Type": "application/json"})
 
-            self.assertEqual(resp.status_code, 302)
+            self.assertEqual(resp.status_code, 200)
 
             Message.query.filter_by(text="Hello").one()
 

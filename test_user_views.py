@@ -302,7 +302,7 @@ class LikeViewTestCase(UserBaseViewTestCase):
             html = resp.get_data(as_text=True)
 
             user = User.query.get(self.u1_id)
-            self.assertIn("bi bi-heart-fill", html)
+            self.assertIn("Success!", html)
             self.assertEqual(len(user.liked_messages), 2)
 
     def test_add_like_as_guest(self):
@@ -332,7 +332,7 @@ class LikeViewTestCase(UserBaseViewTestCase):
             html = resp.get_data(as_text=True)
 
             user = User.query.get(self.u1_id)
-            self.assertIn("bi bi-heart", html)
+            self.assertIn("Success!", html)
             self.assertEqual(len(user.liked_messages), 0)
 
     def test_show_likes(self):

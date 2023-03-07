@@ -24,7 +24,7 @@ app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 toolbar = DebugToolbarExtension(app)
-
+# TODO: Update docstring format
 connect_db(app)
 db.create_all()
 
@@ -311,7 +311,7 @@ def delete_user():
 def add_message():
     """Add a message:
 
-    Show form if GET. If valid, update message and redirect to user page.
+    TODO: Update: Show form if GET. If valid, update message and redirect to user page.
     """
 
     if not g.user:
@@ -380,9 +380,9 @@ def delete_message(message_id):
 
 @app.post('/messages/<int:message_id>/like')
 def handle_like(message_id):
-    '''If message is liked by user, unlikes; if message is not liked by user, likes
-
-    Redirects to the page the user is currently on assuming valid authentication'''
+    '''
+    If message is liked by user, unlikes; if message is not liked by user, likes
+    '''
 
     if not g.user:
         flash("Access unauthorized.", "danger")
