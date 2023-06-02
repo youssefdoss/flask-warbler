@@ -65,7 +65,7 @@ List of available routes:
 `GET signup` - Get signup form\
 `POST login` - Log in user and send home\
 `GET login` - Get login form\
-`POST logout` - Log out user\
+`POST logout` - Log out user
 
 **User routes**:\
 `GET users` - Load page with list of users\
@@ -76,15 +76,15 @@ List of available routes:
 `POST users/stop-following/<int:follow_id>` - Unfollow selected user\
 `POST users/profile` - Update profile for current user\
 `GET users/profile` - Get profile update form\
-`POST users/delete` - Delete current user\
+`POST users/delete` - Delete current user
 
 **Message routes**:\
 `POST messages/new` - Add a message\
 `GET messages/new` - Get new message form\
 `GET messages/<int:message_id>` - Show a message\
-`POST messages/<int:message_id>/delete` - Delete a message\
+`POST messages/<int:message_id>/delete` - Delete a message
 
 **Like routes**:\
 `POST messages/<int:message_id>/like` - Handle like (without AJAX)\
 `POST messages/<int:message_id>/likes` - Handle like (with AJAX)\
-`GET users/<int:user_id>/likes` - Show user's likes\
+`GET users/<int:user_id>/likes` - Show user's likes
