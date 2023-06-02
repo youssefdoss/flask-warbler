@@ -85,6 +85,6 @@ List of available routes:
 `POST messages/<int:message_id>/delete` - Delete a message\
 
 **Like routes**:\
-`POST messages/<int:message_id>/like` - Handle like (without AJAX)
-`POST messages/<int:message_id>/likes` - Handle like (with AJAX)
-`GET users/<int:user_id>/likes` - Show user's likes
+`POST messages/<int:message_id>/like` - Handle like (without AJAX)\
+`POST messages/<int:message_id>/likes` - Handle like (with AJAX)\
+`GET users/<int:user_id>/likes` - Show user's likes\
